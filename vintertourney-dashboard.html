@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vintertourney (Sim) — Tournament Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d1410;
+  --bg2:       #111c14;
+  --bg3:       #162019;
+  --border:    #1e3020;
+  --border2:   #2a4030;
+  --green:     #2a6b35;
+  --green-l:   #3d9155;
+  --green-ll:  #5aba6a;
+  --gold:      #b8922a;
+  --gold-l:    #c8a84a;
+  --gold-ll:   #ddc878;
+  --text:      #d8d4cc;
+  --text2:     #8a9e8a;
+  --text3:     #4a6050;
+  --red:       #c05050;
+  --birdie:    #3d9155;
+  --bogey-bg:  rgba(200,70,70,0.22);
+  --bogey-c:   #d08888;
+  --dbl-bg:    rgba(180,40,40,0.38);
+  --dbl-c:     #e09898;
+  --trp-bg:    rgba(150,20,20,0.55);
+  --trp-c:     #f0a8a8;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+}
+
+/* ── HEADER ─────────────────────────────────── */
+header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+}
+.t-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  color: var(--gold-l);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.t-sub {
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+.t-badge {
+  display: inline-block;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--green-ll);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.8rem;
+  border-radius: 3px;
+  margin-top: 0.8rem;
+}
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 1.8rem;
+  flex-wrap: wrap;
+}
+.hstat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.hstat-val.gold { color: var(--gold-l); }
+.hstat-label {
+  font-size: 0.58rem;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-top: 0.3rem;
+}
+
+/* ── TABS ────────────────────────────────────── */
+.tabs-wrap {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 1.5rem 1.5rem 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab:first-child { border-radius: 4px 0 0 4px; }
+.tab:last-child  { border-radius: 0 4px 4px 0; }
+.tab:not(:first-child) { border-left: none; }
+.tab.active { background: var(--green); border-color: var(--green); color: #e8ffe8; }
+.tab:not(.active):hover { background: var(--bg3); color: var(--text2); }
+
+/* ── MAIN ────────────────────────────────────── */
+main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.sec-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-bottom: 1rem;
+}
+.course-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.6rem;
+  color: var(--green-ll);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+/* ── LEADERBOARD ─────────────────────────────── */
+.leader-grid { display: grid; gap: 0.75rem; margin-bottom: 3rem; }
+.lcard {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1.1rem 1.5rem;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  transition: background 0.15s;
+}
+.lcard:hover { background: var(--bg3); }
+.lcard.leader {
+  background: var(--bg3);
+  border-color: var(--gold);
+  border-left: 3px solid var(--gold);
+}
+.lpos {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text3);
+  text-align: center;
+}
+.lcard.leader .lpos { color: var(--gold-l); }
+.lname {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.lmeta { font-size: 0.6rem; color: var(--text3); margin-top: 0.2rem; letter-spacing: 0.08em; }
+.r1r2-mini { display: flex; gap: 1rem; margin-top: 0.25rem; }
+.r1r2-mini span { font-size: 0.58rem; color: var(--text3); }
+.r1r2-mini .val { color: var(--text2); }
+.lscore { text-align: right; }
+.lnet {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.85rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.lnet.under { color: var(--green-ll); }
+.lnet.over  { color: var(--red); }
+.lgross { font-size: 0.58rem; color: var(--text3); margin-top: 0.25rem; }
+
+/* ── SCORECARD ───────────────────────────────── */
+.sc-section { margin-bottom: 3rem; }
+.sc-controls { display: flex; gap: 0.6rem; margin-bottom: 0.9rem; flex-wrap: wrap; align-items: center; }
+.toggle-wrap { display: flex; border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+.tog {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: all 0.12s;
+  border-right: 1px solid var(--border2);
+}
+.tog:last-child { border-right: none; }
+.tog.on { background: var(--green); color: #e8ffe8; }
+.tog:not(.on):hover { background: var(--bg3); color: var(--text2); }
+
+.legend { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.8rem; font-size: 0.58rem; color: var(--text3); align-items: center; }
+.legend span { display: flex; align-items: center; gap: 0.3rem; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; }
+.sw.circle { border-radius: 50%; }
+
+.sc-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.68rem; min-width: 660px; }
+th {
+  background: var(--bg3);
+  color: var(--text2);
+  padding: 0.55rem 0.45rem;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+th.nm { text-align: left; padding-left: 0.9rem; min-width: 140px; }
+td { padding: 0.5rem 0.45rem; text-align: center; border-bottom: 1px solid var(--border); color: var(--text2); }
+td.nm { text-align: left; padding-left: 0.9rem; color: var(--text); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+.par-row td { color: var(--text3); font-size: 0.6rem; }
+td.tot { font-weight: 600; color: var(--gold-l); background: rgba(184,146,42,0.07); }
+td.out-in { background: var(--bg3); color: var(--gold); font-weight: 600; }
+td.eagle   { background: #b8a020; color: #2a1e00; border-radius: 50%; font-weight: 700; }
+td.birdie  { background: var(--birdie); color: #e8ffe8; border-radius: 50%; font-weight: 600; }
+td.par-s   { color: var(--text3); }
+td.bogey   { background: var(--bogey-bg); color: var(--bogey-c); }
+td.dbl     { background: var(--dbl-bg); color: var(--dbl-c); font-weight: 600; }
+td.trp     { background: var(--trp-bg); color: var(--trp-c); font-weight: 600; }
+
+/* ── CHARTS ──────────────────────────────────── */
+.chart-section { margin-bottom: 3rem; }
+.chart-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.5rem;
+}
+canvas { width: 100% !important; }
+.chart-legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.8rem; font-size: 0.6rem; color: var(--text3); }
+.cl-item { display: flex; align-items: center; gap: 0.35rem; }
+.cl-dot  { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── OVERALL ─────────────────────────────────── */
+.cmp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.9rem; margin-bottom: 3rem; }
+.cmp-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 5px; padding: 1.1rem 1.3rem; }
+.cmp-card.leader-card { border-color: var(--gold); }
+.cmp-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.8rem; }
+.cmp-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem; font-size: 0.6rem; }
+.cmp-lbl { color: var(--text3); width: 2rem; flex-shrink: 0; }
+.cmp-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.cmp-fill { height: 100%; border-radius: 3px; }
+.cmp-val { color: var(--text2); width: 2.5rem; text-align: right; flex-shrink: 0; font-size: 0.6rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="t-title">Vintertourney (Sim)</div>
+  <div class="t-sub">2-Round Series · Slagspill NET</div>
+  <div class="t-badge">⛳ R1: Adare Manor · R2: Lofoten Links</div>
+  <div class="hero-stats">
+    <div><div class="hstat-val">2</div><div class="hstat-label">Rounds</div></div>
+    <div><div class="hstat-val">4</div><div class="hstat-label">Players</div></div>
+    <div><div class="hstat-val gold">Mathias</div><div class="hstat-label">Series leader</div></div>
+    <div><div class="hstat-val">−12</div><div class="hstat-label">Best combined net</div></div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <button class="tab active" onclick="showTab('r1')">Round 1 · Adare Manor</button>
+  <button class="tab"        onclick="showTab('r2')">Round 2 · Lofoten Links</button>
+  <button class="tab"        onclick="showTab('ov')">Overall</button>
+</div>
+
+<main>
+
+<!-- ═══ ROUND 1 ═══ -->
+<div id="panel-r1" class="panel active">
+  <div class="course-badge">⛳ Golf Course at Adare Manor · Par 72</div>
+  <div class="sec-label">Leaderboard</div>
+  <div class="leader-grid">
+    <div class="lcard leader">
+      <div class="lpos">1</div>
+      <div><div class="lname">Mathias Sperre</div><div class="lmeta">HCP 11 · Leader</div></div>
+      <div class="lscore"><div class="lnet under">−6</div><div class="lgross">77 gross · 66 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">2</div>
+      <div><div class="lname">Knut Ørbeck-Nilssen</div><div class="lmeta">HCP 15</div></div>
+      <div class="lscore"><div class="lnet under">−4</div><div class="lgross">83 gross · 68 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">3</div>
+      <div><div class="lname">Mikael Ringkvist</div><div class="lmeta">HCP 9</div></div>
+      <div class="lscore"><div class="lnet over">+13</div><div class="lgross">94 gross · 85 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">4</div>
+      <div><div class="lname">Carl Fredrik Villa</div><div class="lmeta">HCP 7</div></div>
+      <div class="lscore"><div class="lnet over">+15</div><div class="lgross">94 gross · 87 net</div></div>
+    </div>
+  </div>
+
+  <div class="sc-section">
+    <div class="sec-label">Hole-by-Hole Scorecard</div>
+    <div class="sc-controls">
+      <div class="toggle-wrap">
+        <button class="tog on" id="r1-gross" onclick="switchSc('r1','gross')">Gross</button>
+        <button class="tog"    id="r1-net"   onclick="switchSc('r1','net')">Net</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><div class="sw circle" style="background:#b8a020"></div>Eagle</span>
+      <span><div class="sw circle" style="background:var(--birdie)"></div>Birdie</span>
+      <span style="color:var(--text3)">— Par</span>
+      <span><div class="sw" style="background:var(--bogey-bg);border:1px solid var(--bogey-c)"></div>Bogey</span>
+      <span><div class="sw" style="background:var(--dbl-bg);border:1px solid var(--dbl-c)"></div>Double</span>
+      <span><div class="sw" style="background:var(--trp-bg);border:1px solid var(--trp-c)"></div>Triple+</span>
+    </div>
+    <div class="sc-scroll"><table id="sc-r1"></table></div>
+  </div>
+
+  <div class="chart-section">
+    <div class="sec-label">Cumulative Strokes vs Par — Round 1</div>
+    <div class="chart-box">
+      <canvas id="chart-r1" height="300"></canvas>
+      <div class="chart-legend" id="leg-r1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROUND 2 ═══ -->
+<div id="panel-r2" class="panel">
+  <div class="course-badge">⛳ Lofoten Links · Par 71</div>
+  <div class="sec-label">Leaderboard</div>
+  <div class="leader-grid">
+    <div class="lcard leader">
+      <div class="lpos">1</div>
+      <div><div class="lname">Mathias Sperre</div><div class="lmeta">HCP 10 · Leader</div></div>
+      <div class="lscore"><div class="lnet under">−6</div><div class="lgross">79 gross · 69 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">2</div>
+      <div><div class="lname">Knut Ørbeck-Nilssen</div><div class="lmeta">HCP 14</div></div>
+      <div class="lscore"><div class="lnet over">+14</div><div class="lgross">100 gross · 86 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">3</div>
+      <div><div class="lname">Mikael Ringkvist</div><div class="lmeta">HCP 9</div></div>
+      <div class="lscore"><div class="lnet over">+23</div><div class="lgross">89 gross · 80 net</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">4</div>
+      <div><div class="lname">Carl Fredrik Villa</div><div class="lmeta">HCP 6</div></div>
+      <div class="lscore"><div class="lnet over">+24</div><div class="lgross">84 gross · 78 net</div></div>
+    </div>
+  </div>
+
+  <div class="sc-section">
+    <div class="sec-label">Hole-by-Hole Scorecard</div>
+    <div class="sc-controls">
+      <div class="toggle-wrap">
+        <button class="tog on" id="r2-gross" onclick="switchSc('r2','gross')">Gross</button>
+        <button class="tog"    id="r2-net"   onclick="switchSc('r2','net')">Net</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><div class="sw circle" style="background:#b8a020"></div>Eagle</span>
+      <span><div class="sw circle" style="background:var(--birdie)"></div>Birdie</span>
+      <span style="color:var(--text3)">— Par</span>
+      <span><div class="sw" style="background:var(--bogey-bg);border:1px solid var(--bogey-c)"></div>Bogey</span>
+      <span><div class="sw" style="background:var(--dbl-bg);border:1px solid var(--dbl-c)"></div>Double</span>
+      <span><div class="sw" style="background:var(--trp-bg);border:1px solid var(--trp-c)"></div>Triple+</span>
+    </div>
+    <div class="sc-scroll"><table id="sc-r2"></table></div>
+  </div>
+
+  <div class="chart-section">
+    <div class="sec-label">Cumulative Strokes vs Par — Round 2</div>
+    <div class="chart-box">
+      <canvas id="chart-r2" height="300"></canvas>
+      <div class="chart-legend" id="leg-r2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OVERALL ═══ -->
+<div id="panel-ov" class="panel">
+  <div class="sec-label">Overall Standings — Combined Net Score</div>
+  <div class="leader-grid">
+    <div class="lcard leader">
+      <div class="lpos">1</div>
+      <div>
+        <div class="lname">Mathias Sperre</div>
+        <div class="lmeta">HCP 11 / 10</div>
+        <div class="r1r2-mini"><span>R1 <span class="val">66</span></span><span>R2 <span class="val">69</span></span></div>
+      </div>
+      <div class="lscore"><div class="lnet under">135</div><div class="lgross">−12 net to par combined</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">2</div>
+      <div>
+        <div class="lname">Knut Ørbeck-Nilssen</div>
+        <div class="lmeta">HCP 15 / 14</div>
+        <div class="r1r2-mini"><span>R1 <span class="val">68</span></span><span>R2 <span class="val">86</span></span></div>
+      </div>
+      <div class="lscore"><div class="lnet over">154</div><div class="lgross">+10 net to par combined</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">3</div>
+      <div>
+        <div class="lname">Mikael Ringkvist</div>
+        <div class="lmeta">HCP 9</div>
+        <div class="r1r2-mini"><span>R1 <span class="val">85</span></span><span>R2 <span class="val">80</span></span></div>
+      </div>
+      <div class="lscore"><div class="lnet over">165</div><div class="lgross">+36 net to par combined</div></div>
+    </div>
+    <div class="lcard">
+      <div class="lpos">4</div>
+      <div>
+        <div class="lname">Carl Fredrik Villa</div>
+        <div class="lmeta">HCP 7 / 6</div>
+        <div class="r1r2-mini"><span>R1 <span class="val">87</span></span><span>R2 <span class="val">78</span></span></div>
+      </div>
+      <div class="lscore"><div class="lnet over">165</div><div class="lgross">+39 net to par combined</div></div>
+    </div>
+  </div>
+
+  <div class="sec-label">Round-by-Round Net Score Comparison</div>
+  <div class="cmp-grid">
+    <div class="cmp-card leader-card">
+      <div class="cmp-name">Mathias Sperre</div>
+      <div class="cmp-row"><div class="cmp-lbl">R1</div><div class="cmp-track"><div class="cmp-fill" style="width:100%;background:#5aba6a"></div></div><div class="cmp-val" style="color:#5aba6a">66</div></div>
+      <div class="cmp-row"><div class="cmp-lbl">R2</div><div class="cmp-track"><div class="cmp-fill" style="width:calc(69/87*100%);background:#5aba6a;opacity:0.6"></div></div><div class="cmp-val" style="color:#8ad49a">69</div></div>
+    </div>
+    <div class="cmp-card">
+      <div class="cmp-name">Knut Ørbeck-Nilssen</div>
+      <div class="cmp-row"><div class="cmp-lbl">R1</div><div class="cmp-track"><div class="cmp-fill" style="width:calc(68/87*100%);background:#4a9de0"></div></div><div class="cmp-val" style="color:#4a9de0">68</div></div>
+      <div class="cmp-row"><div class="cmp-lbl">R2</div><div class="cmp-track"><div class="cmp-fill" style="width:100%;background:#4a9de0;opacity:0.6"></div></div><div class="cmp-val" style="color:#7abcee">86</div></div>
+    </div>
+    <div class="cmp-card">
+      <div class="cmp-name">Mikael Ringkvist</div>
+      <div class="cmp-row"><div class="cmp-lbl">R1</div><div class="cmp-track"><div class="cmp-fill" style="width:100%;background:#e07040"></div></div><div class="cmp-val" style="color:#e07040">85</div></div>
+      <div class="cmp-row"><div class="cmp-lbl">R2</div><div class="cmp-track"><div class="cmp-fill" style="width:calc(80/87*100%);background:#e07040;opacity:0.6"></div></div><div class="cmp-val" style="color:#e89878">80</div></div>
+    </div>
+    <div class="cmp-card">
+      <div class="cmp-name">Carl Fredrik Villa</div>
+      <div class="cmp-row"><div class="cmp-lbl">R1</div><div class="cmp-track"><div class="cmp-fill" style="width:100%;background:#b06ad0"></div></div><div class="cmp-val" style="color:#b06ad0">87</div></div>
+      <div class="cmp-row"><div class="cmp-lbl">R2</div><div class="cmp-track"><div class="cmp-fill" style="width:calc(78/87*100%);background:#b06ad0;opacity:0.6"></div></div><div class="cmp-val" style="color:#c898e0">78</div></div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="sec-label">Net Score by Round — All Players</div>
+    <div class="chart-box">
+      <canvas id="chart-ov" height="280"></canvas>
+      <div class="chart-legend" id="leg-ov"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const PLAYERS = ['Mathias Sperre','Knut Ørbeck-Nilssen','Mikael Ringkvist','Carl Fredrik Villa'];
+const SHORT   = ['M. Sperre','K. Ørbeck-Nilssen','M. Ringkvist','C. Villa'];
+const COLORS  = ['#5aba6a','#4a9de0','#e07040','#b06ad0'];
+
+const R1 = {
+  par:  [4,4,4,3,4,3,5,4,5, 4,3,5,4,4,4,3,4,5],
+  data: [
+    { gross:[5,4,4,3,5,3,7,4,6, 4,3,4,6,3,4,4,4,4], net:[4,3,3,3,5,2,7,3,5, 3,3,4,5,3,4,3,3,3] },
+    { gross:[4,5,5,4,5,3,6,5,5, 4,3,5,5,5,5,3,4,7], net:[3,4,4,3,5,2,5,4,4, 3,2,5,4,4,5,2,3,6] },
+    { gross:[4,7,5,3,4,3,11,4,9, 5,4,6,4,7,5,3,5,5], net:[4,6,4,3,4,2,11,3,8, 4,4,6,3,7,5,2,5,4] },
+    { gross:[5,5,4,4,4,5,4,5,6, 3,6,6,4,3,10,9,4,7], net:[5,4,3,4,4,4,4,5,5, 3,6,6,3,3,10,8,4,6] },
+  ],
+  par_total: 72,
+};
+
+const R2 = {
+  par:  [4,3,4,4,4,3,5,5,4, 4,4,3,5,4,4,4,3,4],
+  data: [
+    { gross:[3,5,4,4,5,3,5,5,3, 6,5,4,5,4,5,5,3,5], net:[3,4,4,4,4,3,4,4,2, 5,4,3,5,3,5,4,3,5] },
+    { gross:[7,5,7,4,5,4,7,5,5, 4,5,5,8,9,4,7,3,6], net:[7,4,6,3,4,4,6,4,4, 3,4,4,8,8,3,6,3,5] },
+    { gross:[5,3,7,4,3,4,9,6,4, 5,5,3,5,7,4,4,4,7], net:[5,2,7,4,2,4,8,5,3, 5,4,2,5,6,4,3,4,7] },
+    { gross:[7,3,5,5,5,3,5,5,4, 4,5,6,4,4,5,6,3,5], net:[7,3,5,5,5,3,4,4,3, 4,5,5,4,3,5,5,3,5] },
+  ],
+  par_total: 71,
+};
+
+function sc(s,p){
+  const d=s-p;
+  if(d<=-2) return 'eagle';
+  if(d===-1) return 'birdie';
+  if(d===0)  return 'par-s';
+  if(d===1)  return 'bogey';
+  if(d===2)  return 'dbl';
+  return 'trp';
+}
+
+function buildSC(id, round, mode) {
+  const t = document.getElementById(id);
+  const par = round.par;
+  const op = par.slice(0,9).reduce((a,b)=>a+b,0);
+  const ip = par.slice(9).reduce((a,b)=>a+b,0);
+  let h = '<thead><tr><th class="nm">Player</th>';
+  for(let i=1;i<=9;i++) h+=`<th>${i}</th>`;
+  h+=`<th class="out-in">OUT</th>`;
+  for(let i=10;i<=18;i++) h+=`<th>${i}</th>`;
+  h+=`<th class="out-in">IN</th><th class="out-in" style="color:var(--gold-ll)">TOT</th></tr>`;
+  h+=`<tr class="par-row"><td class="nm">Par</td>`;
+  par.slice(0,9).forEach(p=>h+=`<td>${p}</td>`);
+  h+=`<td class="tot">${op}</td>`;
+  par.slice(9).forEach(p=>h+=`<td>${p}</td>`);
+  h+=`<td class="tot">${ip}</td><td class="tot">${round.par_total}</td></tr></thead><tbody>`;
+  round.data.forEach((p,pi)=>{
+    const v = mode==='gross' ? p.gross : p.net;
+    const f=v.slice(0,9), b=v.slice(9);
+    const o=f.reduce((a,c)=>a+c,0), i2=b.reduce((a,c)=>a+c,0);
+    h+=`<tr><td class="nm">${SHORT[pi]}</td>`;
+    f.forEach((s,i)=>h+=`<td class="${sc(s,par[i])}">${s}</td>`);
+    h+=`<td class="tot">${o}</td>`;
+    b.forEach((s,i)=>h+=`<td class="${sc(s,par[9+i])}">${s}</td>`);
+    h+=`<td class="tot">${i2}</td><td class="tot">${o+i2}</td></tr>`;
+  });
+  h+='</tbody>';
+  t.innerHTML=h;
+}
+
+function switchSc(rnd, mode) {
+  document.getElementById(`${rnd}-gross`).classList.toggle('on', mode==='gross');
+  document.getElementById(`${rnd}-net`).classList.toggle('on', mode==='net');
+  buildSC(`sc-${rnd}`, rnd==='r1'?R1:R2, mode);
+}
+
+function cumPar(scores, par) {
+  let c=0; return scores.map((s,i)=>{c+=s-par[i];return c;});
+}
+
+const chartsBuilt = {};
+
+function makeLegend(id) {
+  const el=document.getElementById(id); if(!el)return;
+  el.innerHTML=SHORT.map((n,i)=>`<div class="cl-item"><div class="cl-dot" style="background:${COLORS[i]}"></div>${n}</div>`).join('');
+}
+
+function buildLineChart(cid, round) {
+  if(chartsBuilt[cid]) return;
+  chartsBuilt[cid]=true;
+  makeLegend('leg-'+cid.replace('chart-',''));
+  const labels=['H1','H2','H3','H4','H5','H6','H7','H8','H9','H10','H11','H12','H13','H14','H15','H16','H17','H18'];
+  new Chart(document.getElementById(cid),{
+    type:'line',
+    data:{labels, datasets:round.data.map((p,i)=>({
+      label:SHORT[i], data:cumPar(p.gross,round.par),
+      borderColor:COLORS[i], backgroundColor:COLORS[i]+'20',
+      tension:0.3, pointRadius:3, pointHoverRadius:5, fill:false, borderWidth:2,
+    }))},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1410', borderColor:'#2a4030', borderWidth:1,
+          titleColor:'#b8922a', bodyColor:'#d8d4cc',
+          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y>0?'+':''}${c.parsed.y}`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#4a6050',font:{family:'IBM Plex Mono',size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#4a6050',font:{family:'IBM Plex Mono',size:10},callback:v=>(v>0?'+':'')+v}}
+      }
+    }
+  });
+}
+
+function buildOvChart() {
+  if(chartsBuilt['ov']) return;
+  chartsBuilt['ov']=true;
+  makeLegend('leg-ov');
+  new Chart(document.getElementById('chart-ov'),{
+    type:'bar',
+    data:{
+      labels:['Round 1 · Adare Manor','Round 2 · Lofoten Links'],
+      datasets:PLAYERS.map((n,i)=>({
+        label:SHORT[i], data:[
+          R1.data[i].gross.reduce((a,b)=>a+b,0) - R1.par_total + [11,10,9,7][i] > 0 ?
+          R1.data[i].net.reduce((a,b)=>a+b,0) :
+          R1.data[i].net.reduce((a,b)=>a+b,0),
+          R2.data[i].net.reduce((a,b)=>a+b,0)
+        ],
+        backgroundColor:COLORS[i]+'bb', borderRadius:3,
+      }))
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0d1410',borderColor:'#2a4030',borderWidth:1,titleColor:'#b8922a',bodyColor:'#d8d4cc'}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#4a6050',font:{family:'IBM Plex Mono',size:11}}},
+        y:{min:55, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#4a6050',font:{family:'IBM Plex Mono',size:10}},
+           title:{display:true,text:'Net Score',color:'#4a6050',font:{family:'IBM Plex Mono',size:10}}}
+      }
+    }
+  });
+}
+
+function showTab(id) {
+  ['r1','r2','ov'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.toggle('active', p===id);
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active', ['r1','r2','ov'][i]===id);
+  });
+  if(id==='r1') buildLineChart('chart-r1', R1);
+  if(id==='r2') { buildSC('sc-r2',R2,'gross'); buildLineChart('chart-r2', R2); }
+  if(id==='ov') buildOvChart();
+}
+
+// Init
+buildSC('sc-r1', R1, 'gross');
+buildLineChart('chart-r1', R1);
+</script>
+</body>
+</html>
